@@ -60,9 +60,9 @@ $('#challenge-freeze').onclick=()=>action(async()=>{
   review(suite);cards();say('Suite frozen. Choose an audience spotlight, then run all three injected bugs.');
 });
 async function runBrowser(tests,version){
-  const frame=document.createElement('iframe');frame.title='Challenge runner '+version;frame.hidden=true;document.body.append(frame);
+  const frame=document.createElement('iframe');frame.title='Challenge runner '+version;frame.hidden=true;
   try{
-    await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Checkout load timed out.')),8000);frame.onload=()=>{clearTimeout(timer);resolve();};frame.onerror=()=>{clearTimeout(timer);reject(Error('Checkout load failed.'));};frame.src='cart.html?version='+version;});
+    await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Checkout load timed out.')),8000);frame.onload=()=>{clearTimeout(timer);resolve();};frame.onerror=()=>{clearTimeout(timer);reject(Error('Checkout load failed.'));};frame.src='cart.html?version='+version;document.body.append(frame);});
     const doc=frame.contentDocument;if(doc.body.dataset.ready!=='true')throw Error('Checkout did not initialise.');
     return tests.map(t=>{doc.querySelector('#subtotal').value=String(t.subtotal/100);doc.querySelector('#discount').value=String(t.discount/100);doc.querySelector('button').click();const actual=doc.querySelector('#shipping').textContent;const error=doc.querySelector('#error').textContent||null;return {name:t.name,version,input:{subtotal:t.subtotal,discount:t.discount},expected:money(t.expectedShipping),actual,error,pass:!error&&actual===money(t.expectedShipping),at:new Date().toISOString(),domSnapshot:doc.querySelector('.receipt').outerHTML};});
   }catch(e){return tests.map(t=>({name:t.name,version,expected:money(t.expectedShipping),actual:null,error:e.message,pass:false}));}finally{frame.remove();}
