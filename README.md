@@ -32,7 +32,8 @@ The hosted app supports prepared/imported challenge cases. Live generation requi
 Requires Node.js 22.10+ (Node 24 recommended). No dependencies are needed to run the app.
 
 ```powershell
-cd releaseradar
+git clone https://github.com/kallurayaankit/release-radar.git
+cd release-radar
 npm start
 ```
 
