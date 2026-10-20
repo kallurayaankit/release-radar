@@ -1,3 +1,4 @@
+import './stress.js';
 import {baseline, prepared, validatePlan, playwrightSpec, generationPrompt} from './scenario.js';
 import {money} from './checkout.js';
 import {mountQuest, updateQuest} from './quest.js';

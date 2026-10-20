@@ -1,0 +1,23 @@
+import {test,expect} from '@playwright/test';
+import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {generateCorpus,runStress} from '../dist/stress-core.js';
+test('stress suite exports reproducible evidence and validates seed',async({page})=>{
+  await page.goto('/');
+  await page.getByLabel('Replay seed').fill('-1');
+  await page.locator('#stress-run').click();
+  await expect(page.locator('#stress-status')).toContainText('32-bit');
+  await expect(page.locator('#stress-export')).toBeDisabled();
+  await page.getByLabel('Replay seed').fill('42');
+  await page.getByLabel('Generated cases').selectOption('1000');
+  await page.locator('#stress-run').click();
+  await expect(page.locator('#stress-status')).toContainText('3/3 seeded defects detected');
+  await expect(page.locator('.stress-result')).toHaveCount(5);
+  const event=page.waitForEvent('download');await page.locator('#stress-export').click();
+  const file=await event;expect(file.suggestedFilename()).toBe('releaseradar-stress-42.json');
+  const report=JSON.parse(await readFile(await file.path(),'utf8'));
+  expect(report.corpusSha256).toBe(createHash('sha256').update(JSON.stringify(generateCorpus(42,1000))).digest('hex'));
+  expect(report.mutants).toEqual(runStress({seed:42,count:1000}).mutants);
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

@@ -95,3 +95,11 @@ The strongest evidence is the contrast between builds, not an invented confidenc
 ## Hosted chatbot
 
 Run `node scripts/build-hosted.mjs` to package the static UI and Worker. The hosting manifest binds D1 as `DB`; migrations in `drizzle/` create the quota table. Configure `OPENAI_API_KEY` as an encrypted Site secret, `OPENAI_MODEL=gpt-4.1`, `CHAT_ENABLED=true`, and `CHAT_DAILY_LIMIT=300`. Never include secrets in the browser bundle or source. Hosted chat allows six requests per visitor per minute and 300 requests globally per UTC day; failed upstream requests also count. Chat messages are not persisted by this app.
+
+## Reproducible stress lab
+
+The hosted **Go beyond the happy path** section runs 1,000, 5,000 or 20,000 seeded generated price/discount pairs plus 36 explicit boundaries. Checks compare shipping and totals against a separate BigInt reference, verify equal price/discount offset invariance, and reject ten invalid inputs on each control build. The correct and fixed builds must pass before any seeded defect counts as detected. Exceptions produce inconclusive results, never successful detection.
+
+Download JSON evidence containing the seed, engine version, corpus SHA-256, control results and first counterexamples. Reproduce the 20,000-case run locally with `npm run test:stress`; set `TEST_SEED` to use another seed. All values are integer cents. Generated net amounts are bounded to 0–1,000,000 cents and discounts to 0–100,000 cents; this is not exhaustive input coverage. The three fixtures are hand-seeded mutants, not automated source mutation coverage. These checks execute calculation logic, separately from browser DOM regression tests.
+
+GitHub Actions runs logic/stress checks and browser suites on Chromium, Firefox and WebKit with Node 24. Paid AI tests remain opt-in and are skipped in this secret-free CI workflow. Failure traces are uploaded for seven days. Local execution uses Edge on Windows unless `TEST_BROWSER` selects another installed Playwright browser.
