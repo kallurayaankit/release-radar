@@ -1,0 +1,15 @@
+node_modules/
+.env
+test-results/
+playwright-report/
+*.tar.gz
+*.zip
+live-plan-check.json
+
+# Private environment overrides and generated hosting output
+.env.*
+!.env.example
+dist/server/
+dist/.openai/
+*.pem
+*.key

@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fieldwork checkout · ReleaseRadar</title><link rel="stylesheet" href="cart.css"><link rel="stylesheet" href="cart-luxury.css"><link rel="stylesheet" href="rockets.css"></head><body>
+<header><span class="brand">fieldwork<span>®</span></span><span class="secure">DEMO STORE</span></header>
+<main><div class="product"><div class="bag" aria-hidden="true"><span>fw.</span></div><div><small>EVERYDAY ESSENTIALS</small><h1>The everyday carry</h1><p>Canvas tote · Sand / one size</p></div></div>
+<form id="cart"><div class="inputs"><label>Subtotal (AUD)<input id="subtotal" type="number" step="0.01" min="0" max="10000" value="110" required></label><label>Discount (AUD)<input id="discount" type="number" step="0.01" min="0" value="20" required></label></div><button>Calculate checkout</button></form>
+<p id="error" role="alert"></p><div class="receipt"><div><span>After discount</span><strong id="net"></strong></div><div><span>Shipping</span><strong data-testid="shipping" id="shipping"></strong></div><div class="total"><span>Total</span><strong id="total"></strong></div></div>
+<p class="policy">Free shipping on orders of $100+ after discounts.</p><footer id="version"></footer></main>
+<script type="module">
+import {checkout,money} from './checkout.js';
+const version = new URLSearchParams(location.search).get('version') || 'buggy';
+document.querySelector('#version').textContent = version.toUpperCase() + ' BUILD · Seeded demo';
+function render(){try{const subtotal=Math.round(Number(document.querySelector('#subtotal').value)*100);const discount=Math.round(Number(document.querySelector('#discount').value)*100);const result=checkout(subtotal,discount,version);document.querySelector('#net').textContent=money(result.discountedSubtotal);document.querySelector('#shipping').textContent=money(result.shipping);document.querySelector('#total').textContent=money(result.total);document.querySelector('#error').textContent='';document.body.dataset.ready='true';}catch(error){document.querySelector('#error').textContent=error.message;document.querySelector('#shipping').textContent='Invalid';}}
+document.querySelector('form').addEventListener('submit',e=>{e.preventDefault();render();});render();
+</script></body></html>

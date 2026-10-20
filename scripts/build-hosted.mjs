@@ -1,0 +1,8 @@
+import {readFile,readdir,mkdir,writeFile} from 'node:fs/promises';
+const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8'};
+const assets={};for(const name of (await readdir('dist')).sort()){const ext=name.slice(name.lastIndexOf('.'));if(types[ext])assets['/'+name]={type:types[ext],body:await readFile('dist/'+name,'utf8')};}
+const core=await readFile('dist/guide-core.js','utf8');
+const handler=(await readFile('worker/handler.js','utf8')).replace("import {guideInstructions,validateChat} from '../dist/guide-core.js';",'');
+const source=core+'\n'+handler+'\nconst assets='+JSON.stringify(assets)+';\n'+`export default {async fetch(request,env,ctx){const url=new URL(request.url);if(url.pathname.startsWith('/api/'))return handleApi(request,env,ctx);if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});const asset=assets[url.pathname==='/'?'/index.html':url.pathname];if(!asset)return new Response('Not found',{status:404});return new Response(request.method==='HEAD'?null:asset.body,{headers:{'Content-Type':asset.type,'Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'same-origin'}});}};`;
+await mkdir('dist/server',{recursive:true});await mkdir('dist/.openai',{recursive:true});await writeFile('dist/server/index.js',source);await writeFile('dist/.openai/hosting.json',await readFile('.openai/hosting.json'));
+const module=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));if(typeof module.default?.fetch!=='function')throw Error('Invalid worker');console.log('Built and validated hosted Worker with '+Object.keys(assets).length+' embedded assets.');
