@@ -4,9 +4,9 @@ import {money} from './checkout.js';
 import {mountQuest, updateQuest} from './quest.js';
 import './challenge.js';
 import './guide.js';
-import {mountDepth} from './depth.js';
+
 mountQuest();
-mountDepth();
+
 const connectionBadge=document.createElement('span');connectionBadge.id='ai-connection';connectionBadge.className='ai-connection';connectionBadge.textContent='Checking AI connection…';document.querySelector('.top-actions').prepend(connectionBadge);
 const planButton=document.createElement('button');planButton.id='download-plan';planButton.className='text-button';planButton.textContent='↓ Test cases';planButton.disabled=true;document.querySelector('.evidence-tools').prepend(planButton);
 const proofCard=document.createElement('section');proofCard.id='proof-card';proofCard.className='proof-card';proofCard.hidden=true;document.querySelector('.evidence-panel').before(proofCard);

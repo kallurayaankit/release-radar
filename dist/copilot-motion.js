@@ -2,7 +2,8 @@ const scene=document.createElement('div');scene.className='calm-scene';scene.set
 scene.innerHTML='<div class="calm-depth"><i class="calm-orb sage"></i><i class="calm-orb blue"></i><i class="calm-orb sand"></i><i class="calm-ring"></i></div>';
 document.body.prepend(scene);
 const depth=scene.firstElementChild;
-const actions=document.createElement('div');actions.className='bar-actions';const link=document.querySelector('.bar>a:last-child');link.before(actions);actions.append(link);
+let actions=document.querySelector('.top-actions');
+if(!actions){actions=document.createElement('div');actions.className='bar-actions';const link=document.querySelector('.bar>a:last-child');link.before(actions);actions.append(link);}
 const button=document.createElement('button');button.type='button';button.id='background-motion';actions.prepend(button);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');let preference=true;
 try{preference=localStorage.getItem('releaseradar-calm-motion')!=='off';}catch{}
