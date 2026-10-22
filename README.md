@@ -6,6 +6,16 @@ A working regression-testing demo with a live AI guide, an animated galaxy backd
 
 A focused Builder Day prototype: existing tests pass on a correct checkout and a deliberately buggy checkout. New tests expose the missing discount interaction; unchanged assertions then verify the fix.
 
+## QA Copilot
+
+Open /copilot.html or use **QA Copilot** in the lab sidebar. This workspace accepts arbitrary software requirements, pasted diffs, reported test results and an optional HTML snippet. Live AI produces structured risks, prioritized test plans, CSS selector candidates and an evidence-qualified release recommendation. The report is validated on the server. Failed tests and high/critical risks force a hold; missing evidence or unknowns prevent a conditional recommendation. This is advisory analysis, not execution, repository scanning or release approval.
+
+The browser checks CSS candidate match counts in an inert HTML template. A unique match is not proof of correct intent, visibility or behavior. Review suggestions and rerun your own browser tests before applying changes. No generated code is executed. Reports identify sample versus live provenance, model, time and supplied revision; JSON export includes the original brief. Editing the brief marks its previous report stale. Nothing is persisted by this app; requests use store:false with the existing OpenAI Responses API configuration. Do not submit secrets or personal information.
+
+Both local and hosted servers expose POST /api/copilot. Hosted analysis shares chat's atomic database quotas (default 300 requests/day globally and 6 requests/minute per visitor); CHAT_ENABLED pauses both features. The existing server-only OPENAI_API_KEY is reused. A labeled sample report remains available when AI is unavailable. AI failures never substitute a sample result.
+
+Tests cover evidence gates, invalid inputs, incomplete model replies, quota sharing, safe output rendering, ambiguous selector matching, stale provenance and mobile layout.
+
 ## Ask Radar
 
 The **Ask Radar** button opens a keyboard-accessible guide for beginners. Suggested questions explain project ideas, the current demo step, requirements, challenges, and evidence. **Built-in help** is a prepared, browser-only guide, available on the hosted site without a key. **Live AI** on the configured local or hosted server supports follow-up conversation using the existing OpenAI model. Sending in that mode transmits recent messages and visible demo status to OpenAI through the server-side Responses API; the key never reaches the browser. Chat is held in page memory only and clears on reload or New chat. The guide offers navigation but does not execute tests, build arbitrary apps, or change assertions. Failed live requests remain visible and restore the question; there is no silent fallback.

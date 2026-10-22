@@ -1,3 +1,4 @@
+import {validateQaInput,generateQa} from './dist/copilot-core.js';
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -19,7 +20,19 @@ const server=http.createServer(async(req,res)=>{
     const host=req.headers.host;
     if(![`127.0.0.1:${port}`,`localhost:${port}`].includes(host))return json(res,403,{error:'Invalid host.'});
     const url=new URL(req.url,`http://${host}`);
-    if(url.pathname==='/api/config')return json(res,200,{configured:Boolean(process.env.OPENAI_API_KEY),model});
+    if(url.pathname==='/api/config')return json(res,200,{configured:Boolean(process.env.OPENAI_API_KEY),copilotConfigured:Boolean(process.env.OPENAI_API_KEY),model});
+    if(url.pathname==='/api/copilot'){
+      if(req.method!=='POST')return json(res,405,{error:'POST required.'});
+      if(req.headers.origin&&req.headers.origin!=='http://'+host)return json(res,403,{error:'Same-origin requests only.'});
+      if(!process.env.OPENAI_API_KEY)return json(res,503,{error:'Live analysis requires server configuration. The sample remains available.'});
+      if(chatting)return json(res,429,{error:'Another AI request is running. Please retry shortly.'});
+      chatting=true;
+      try{
+        let body='';for await(const chunk of req){body+=chunk;if(Buffer.byteLength(body)>28000)return json(res,413,{error:'Brief too large.'});}
+        let input;try{input=validateQaInput(JSON.parse(body));}catch(error){return json(res,400,{error:error.message});}
+        return json(res,200,await generateQa(input,{key:process.env.OPENAI_API_KEY,model}));
+      }catch{return json(res,502,{error:'Could not complete AI analysis. Retry with a shorter brief. No sample was substituted.'});}finally{chatting=false;}
+    }
     if(url.pathname==='/api/chat'){
       if(req.method!=='POST')return json(res,405,{error:'POST required.'});
       if(req.headers.origin&&req.headers.origin!==`http://${host}`)return json(res,403,{error:'Same-origin requests only.'});

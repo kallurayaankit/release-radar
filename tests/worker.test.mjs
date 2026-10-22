@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {readFileSync} from 'node:fs';
 import {handleApi} from '../worker/handler.js';
+import {qaExample,qaExampleReport} from '../dist/copilot-core.js';
 function env(limit='300'){
   const db=new DatabaseSync(':memory:');db.exec(readFileSync(new URL('../drizzle/0000_conscious_proemial_gods.sql',import.meta.url),'utf8'));
   return {OPENAI_API_KEY:'test-placeholder',OPENAI_MODEL:'test-model',CHAT_DAILY_LIMIT:limit,DB:{prepare(sql){return {bind(...args){return {async first(){return db.prepare(sql).get(...args)||null;},async run(){return db.prepare(sql).run(...args);}};}};}}};
@@ -13,3 +14,14 @@ test('hosted config separates chat from local test generation and never exposes 
 test('shared database enforces per-visitor and global allowances before AI requests',async()=>{let calls=0;const fetcher=async()=>{calls++;return ok();};const state=env();for(let i=0;i<6;i++)assert.equal((await handleApi(request(),state,null,fetcher)).status,200);assert.equal((await handleApi(request(),state,null,fetcher)).status,429);assert.equal(calls,6);const small=env('1');assert.equal((await handleApi(request('192.0.2.2'),small,null,fetcher)).status,200);assert.equal((await handleApi(request('192.0.2.3'),small,null,fetcher)).status,429);});
 test('origin, missing key and unavailable limiter fail closed',async()=>{assert.equal((await handleApi(request('x','https://other.test'),env(),null,ok)).status,403);assert.equal((await handleApi(request(),{},null,ok)).status,503);const state=env();state.DB.prepare=()=>{throw Error('database unavailable');};assert.equal((await handleApi(request(),state,null,ok)).status,503);});
 test('upstream failures return a safe retry message',async()=>{const response=await handleApi(request(),env(),null,async()=>new Response('private error',{status:401}));assert.equal(response.status,502);assert.ok(!(await response.text()).includes('private error'));});
+test('copilot shares chat quotas, validates requests and qualifies structured reports',async()=>{
+  const state=env('1');let calls=0;
+  const req=(input=qaExample,origin='https://demo.test')=>new Request('https://demo.test/api/copilot',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify(input)});
+  const fetcher=async()=>{calls++;return Response.json({status:'completed',model:'test',output:[{content:[{type:'output_text',text:JSON.stringify(qaExampleReport)}]}]});};
+  assert.equal((await handleApi(req({},'https://evil.test'),state,null,fetcher)).status,403);
+  assert.equal((await handleApi(req({}),state,null,fetcher)).status,400);
+  assert.equal(calls,0);
+  const result=await handleApi(req(),state,null,fetcher);assert.equal(result.status,200);
+  assert.equal((await result.json()).report.recommendation.decision,'hold');
+  assert.equal((await handleApi(request(),state,null,fetcher)).status,429);assert.equal(calls,1);
+});

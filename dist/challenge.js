@@ -60,7 +60,7 @@ $('#challenge-freeze').onclick=()=>action(async()=>{
   review(suite);cards();say('Suite frozen. Choose an audience spotlight, then run all three injected bugs.');
 });
 async function runBrowser(tests,version){
-  const frame=document.createElement('iframe');frame.title='Challenge runner '+version;frame.hidden=true;
+  const frame=document.createElement('iframe');frame.title='Challenge runner '+version;frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;frame.style.cssText='position:fixed;left:-10000px;top:0;width:640px;height:480px;pointer-events:none';
   try{
     await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Checkout load timed out.')),8000);frame.onload=()=>{clearTimeout(timer);resolve();};frame.onerror=()=>{clearTimeout(timer);reject(Error('Checkout load failed.'));};frame.src='cart.html?version='+version;document.body.append(frame);});
     const doc=frame.contentDocument;if(doc.body.dataset.ready!=='true')throw Error('Checkout did not initialise.');
