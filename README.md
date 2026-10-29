@@ -1,3 +1,9 @@
+## Current Vercel deployment
+
+Live prototype: https://releaseradar-lime.vercel.app
+
+The current deployable Vercel application is in [vercel/](vercel/README.md). Set the Vercel project Root Directory to **vercel** when importing this repository. The root application is retained as the legacy local/Sites version. Updated social drafts and narration script are in [launch/](launch/README.txt). See the Vercel README for current integration limitations.
+
 # ReleaseRadar
 
 Live demo: https://releaseradar-sydney-demo.glossychar1.chatgpt.site/
@@ -113,3 +119,4 @@ The hosted **Go beyond the happy path** section runs 1,000, 5,000 or 20,000 seed
 Download JSON evidence containing the seed, engine version, corpus SHA-256, control results and first counterexamples. Reproduce the 20,000-case run locally with `npm run test:stress`; set `TEST_SEED` to use another seed. All values are integer cents. Generated net amounts are bounded to 0–1,000,000 cents and discounts to 0–100,000 cents; this is not exhaustive input coverage. The three fixtures are hand-seeded mutants, not automated source mutation coverage. These checks execute calculation logic, separately from browser DOM regression tests.
 
 GitHub Actions runs logic/stress checks and browser suites on Chromium, Firefox and WebKit with Node 24. Paid AI tests remain opt-in and are skipped in this secret-free CI workflow. Failure traces are uploaded for seven days. Local execution uses Edge on Windows unless `TEST_BROWSER` selects another installed Playwright browser.
+

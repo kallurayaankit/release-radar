@@ -1,0 +1,14 @@
+BEGIN;
+CREATE TABLE IF NOT EXISTS chat_quota (key text PRIMARY KEY,used integer NOT NULL,expires bigint NOT NULL);
+CREATE TABLE IF NOT EXISTS oauth_pending (state text PRIMARY KEY,owner text NOT NULL,payload text NOT NULL,expires bigint NOT NULL);
+CREATE TABLE IF NOT EXISTS oauth_connections (owner text PRIMARY KEY,payload text NOT NULL,version text NOT NULL,locked_until bigint NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS jira_connections (owner text PRIMARY KEY,payload text NOT NULL);
+CREATE TABLE IF NOT EXISTS jira_submissions (id text PRIMARY KEY,owner text NOT NULL,site text NOT NULL,fingerprint text NOT NULL,phase text NOT NULL,issue_key text,attachment_id text,updated bigint NOT NULL);
+ALTER TABLE chat_quota ENABLE ROW LEVEL SECURITY;
+ALTER TABLE oauth_pending ENABLE ROW LEVEL SECURITY;
+ALTER TABLE oauth_connections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jira_connections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jira_submissions ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON chat_quota,oauth_pending,oauth_connections,jira_connections,jira_submissions FROM anon,authenticated;
+CREATE INDEX IF NOT EXISTS chat_quota_expiry ON chat_quota(expires);
+COMMIT;

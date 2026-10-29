@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {checkout} from '../dist/checkout.js';
+import {baseline,prepared,validatePlan,playwrightSpec} from '../dist/scenario.js';
+test('the old suite cannot distinguish the regression',()=>{for(const version of ['correct','buggy'])for(const t of baseline)assert.equal(checkout(t.subtotal,t.discount,version).shipping,t.expectedShipping);});
+test('new cases pass on correct and fixed builds and catch the mutant',()=>{for(const version of ['correct','fixed'])for(const t of prepared.tests)assert.equal(checkout(t.subtotal,t.discount,version).shipping,t.expectedShipping);assert.equal(prepared.tests.filter(t=>checkout(t.subtotal,t.discount,'buggy').shipping!==t.expectedShipping).length,2);});
+test('one-cent and inclusive threshold semantics are preserved',()=>{assert.equal(checkout(10000,1).shipping,1000);assert.equal(checkout(10001,1).shipping,0);assert.equal(checkout(0,0).total,1000);});
+test('invalid money and versions are rejected',()=>{for(const args of [[-1,0],[5,6],[1.1,0],[Infinity,0],[5,-1],[5,0,'bad']])assert.throws(()=>checkout(...args));});
+test('import validation rejects unsafe or malformed cases',()=>{for(const value of [null,{}, {summary:'x',tests:[]},{summary:'x',tests:[{name:'x',reason:'x',subtotal:100,discount:0,expectedShipping:5}]},{summary:'x',tests:[prepared.tests[0],prepared.tests[0]]}])assert.throws(()=>validatePlan(value));assert.deepEqual(validatePlan(prepared),prepared);});
+test('exported Playwright cases preserve expected assertions',()=>{const source=playwrightSpec(prepared.tests);assert.ok(source.includes("getByTestId('shipping')"));assert.ok(source.includes('"expectedShipping": 1000'));assert.ok(source.includes('CHECKOUT_VERSION'));});

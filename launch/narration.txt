@@ -1,0 +1,14 @@
+RELEASERADAR NARRATION
+AI-generated with the existing Raya — My Voice clone in HeyGen. Natural speed, approximately 50 seconds.
+
+Green tests don't always mean a safe release. I built ReleaseRadar to make testing evidence easier to understand.
+
+Watch this checkout example. The existing tests pass, but none combines a discount with shipping eligibility.
+
+I load prepared cases and run them against both builds. Now the hidden bug appears: shipping uses the wrong subtotal. This bug is deliberately seeded for the demo.
+
+Next, I apply the fix and rerun the same assertions. The corrected build passes, while the original failures stay in the evidence.
+
+There are also API testing tools, Postman and OpenAPI imports, and an exploratory testing workbench with Jira integration flows.
+
+Live AI is still being configured. Try ReleaseRadar on Vercel, explore the code on GitHub, and tell me what would make your testing day easier.

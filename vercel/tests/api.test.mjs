@@ -1,0 +1,8 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {prepare,checkAssertions,diffJson,validateCollection,safeRequest,curl} from '../dist/api-core.js';
+test('variables resolve and missing values fail before sending',()=>{assert.equal(prepare({url:'{{base}}/items',headers:'{}'},{base:'https://example.com'}).url,'https://example.com/items');assert.throws(()=>prepare({url:'{{base}}',headers:'{}'}),/Missing/);assert.throws(()=>prepare({url:'javascript:alert(1)',headers:'{}'}),/HTTP/);});
+test('assertions expose regression and missing fields',()=>{const checks=checkAssertions({status:200,ms:50,body:'{"shipping":0}'},[{type:'status',value:200},{type:'json',path:'shipping',value:10},{type:'json',path:'missing',value:0},{type:'time',value:10}]);assert.deepEqual(checks.map(c=>c.pass),[true,false,false,false]);});
+test('diff distinguishes added, removed and changed values',()=>{assert.deepEqual(diffJson({a:1,b:2},{a:3,c:4}).map(d=>d.path),['$.a','$.b','$.c']);assert.equal(diffJson({a:1},{a:1}).length,0);});
+test('saved request strips transport secrets',()=>{const r=safeRequest({url:'https://example.com/a?token=secret#secret',headers:'{"Authorization":"secret"}',body:'secret'});assert.equal(r.url,'https://example.com/a');assert.equal(r.headers,'{}');assert.equal(r.body,'');});
+test('collection input bounded and valid',()=>{assert.throws(()=>validateCollection(Array(31).fill({})),/30/);assert.throws(()=>validateCollection([{name:'x',method:'TRACE',url:'https://example.com',assertions:[]}]),/supported/);});
+test('curl shell quotes untrusted request contents',()=>{assert.ok(curl({method:'POST',url:'https://example.com',headers:{},body:"it's"}).includes("'it'\\''s'"));});

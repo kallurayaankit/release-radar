@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1792462697672,
+      "tag": "0000_conscious_proemial_gods",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1793246489500,
+      "tag": "0001_lethal_mach_iv",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793251238615,
+      "tag": "0002_concerned_vampiro",
+      "breakpoints": true
+    }
+  ]
+}

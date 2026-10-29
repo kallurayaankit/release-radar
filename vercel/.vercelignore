@@ -1,0 +1,6 @@
+.env*
+node_modules
+tests
+drizzle
+public
+scripts/provision-env.mjs

@@ -1,0 +1,7 @@
+Green tests. Hidden bug. Same tests, verified fix.
+
+I built ReleaseRadar with Codex: a testing prototype with regression demos, API tools and exploratory sessions.
+
+Try it: https://releaseradar-lime.vercel.app
+
+#BuiltWithCodex #CodexSydney

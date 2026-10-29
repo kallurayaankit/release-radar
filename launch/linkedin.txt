@@ -1,0 +1,20 @@
+Green tests can still hide a regression.
+
+That is the idea behind ReleaseRadar, the testing prototype I have been building with Codex.
+
+The demo starts with three passing checkout tests. Add a missing discount scenario, and a deliberately seeded shipping bug becomes visible. Apply the fix, rerun the same assertions, and keep the evidence of what changed.
+
+ReleaseRadar is now hosted on Vercel, with a broader testing workspace:
+• API request tools and Postman/OpenAPI imports
+• Agile and exploratory testing sessions
+• Jira Cloud integration flows for sprint stories and bugs with evidence
+• QA copilot workflows for risks, test plans and release recommendations
+
+This is a working prototype, not an autonomous release approver. Live AI needs a replacement API key, and real Jira/OAuth account flows still need end-to-end validation. The regression walkthrough uses prepared cases and runs the checks in the browser.
+
+Try it: https://releaseradar-lime.vercel.app
+Code: https://github.com/kallurayaankit/release-radar
+
+Testers and developers: which repetitive testing task would you want this to remove next?
+
+#BuiltWithCodex #CodexSydney #SoftwareTesting

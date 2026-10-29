@@ -1,0 +1,16 @@
+import {createServerClient} from '@supabase/ssr';
+import {parse,serialize} from 'cookie';
+export function authClient(request,env,changes){return createServerClient(env.SUPABASE_URL,env.SUPABASE_PUBLISHABLE_KEY,{cookieOptions:{httpOnly:true,secure:true,sameSite:'lax',path:'/'},cookies:{getAll(){return Object.entries(parse(request.headers.get('cookie')||'')).map(([name,value])=>({name,value}));},setAll(cookies){for(const c of cookies)changes.push(serialize(c.name,c.value,{...c.options,httpOnly:true,secure:true,sameSite:'lax',path:'/'}));}}});}
+export async function authRoute(request,client,db){const url=new URL(request.url),action=url.pathname.split('/').pop();const json=(code,data)=>Response.json(data,{status:code});
+ if(action==='callback'&&request.method==='GET'){const code=url.searchParams.get('code');if(!code||code.length>3000)return json(400,{error:'Missing confirmation code. Sign in after confirming your email.'});const {error}=await client.auth.exchangeCodeForSession(code);return error?json(400,{error:'Confirmation expired or was opened in another browser. Confirm your email, then sign in.'}):new Response(null,{status:303,headers:{Location:'/testing-workbench.html'}});}
+ if(action==='session'&&request.method==='GET'){const {data:{user}}=await client.auth.getUser();return json(200,{signedIn:!!user,email:user?.email||null});}
+ if(request.method!=='POST')return json(405,{error:'POST required.'});if(request.headers.get('origin')!==url.origin)return json(403,{error:'Same-origin request required.'});
+ if(action==='signout'){const {error}=await client.auth.signOut({scope:'local'});return error?json(503,{error:'Sign-out could not be completed. Please retry.'}):json(200,{signedIn:false});}
+ if(!['signin','signup'].includes(action))return json(404,{error:'Unknown account action.'});
+ if(!db)return json(503,{error:'Account storage is not configured.'});
+ const minute=Math.floor(Date.now()/60000),ip=request.headers.get('cf-connecting-ip')||'anonymous';const digest=Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(minute+':'+ip))).toString('hex');const quota=await db.prepare('INSERT INTO chat_quota (key,used,expires) VALUES (?,1,?) ON CONFLICT(key) DO UPDATE SET used=used+1 WHERE used < ? RETURNING used').bind('auth:'+digest,Date.now()+120000,10).first();if(!quota)return json(429,{error:'Too many attempts. Wait a minute.'});
+ let input;try{input=await request.json();}catch{return json(400,{error:'Invalid account request.'});}const {email,password}=input;if(typeof email!=='string'||email.length>320||!email.includes('@')||typeof password!=='string'||password.length<8||password.length>256)return json(400,{error:'Enter an email and a password of 8–256 characters.'});
+ const result=action==='signin'?await client.auth.signInWithPassword({email,password}):await client.auth.signUp({email,password,options:{emailRedirectTo:url.origin+'/api/auth/callback'}});
+ if(result.error)return json(400,{error:action==='signin'?'Could not sign in. Check your credentials and confirm your email.':'Could not create account. Check password requirements or try again later.'});
+ return json(200,{signedIn:!!result.data.session,message:result.data.session?'Signed in.':'Check your email to confirm your account, then sign in. Open confirmation in this browser.'});
+}

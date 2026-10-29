@@ -1,0 +1,20 @@
+name: Vercel application checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  vercel:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vercel
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vercel/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

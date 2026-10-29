@@ -1,0 +1,1 @@
+const header=document.querySelector('header');if(header){const a=document.createElement('a');a.href='/signin.html?return_to='+encodeURIComponent(location.pathname);a.textContent='Account';a.style.cssText='font:500 12px system-ui;padding:8px 12px;border:1px solid #dbe1ef;border-radius:20px;white-space:nowrap';header.append(a);}

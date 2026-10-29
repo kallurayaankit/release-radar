@@ -1,0 +1,75 @@
+1
+00:00:00,299 --> 00:00:02,881
+Green tests don't always mean a safe release.
+
+2
+00:00:03,115 --> 00:00:06,977
+I built ReleaseRadar to make testing evidence easier to understand.
+
+3
+00:00:07,125 --> 00:00:09,067
+Watch this checkout example.
+
+4
+00:00:09,259 --> 00:00:10,945
+The existing tests pass,
+
+5
+00:00:11,051 --> 00:00:13,991
+but none combines a discount with shipping eligibility.
+
+6
+00:00:14,028 --> 00:00:17,207
+I load prepared cases and run them against both builds.
+
+7
+00:00:17,399 --> 00:00:18,871
+Now the hidden bug appears:
+
+8
+00:00:18,977 --> 00:00:20,919
+shipping uses the wrong subtotal.
+
+9
+00:00:21,068 --> 00:00:23,501
+This bug is deliberately seeded for the demo.
+
+10
+00:00:23,671 --> 00:00:26,859
+Next, I apply the fix and rerun the same assertions.
+
+11
+00:00:27,017 --> 00:00:28,788
+The corrected build passes,
+
+12
+00:00:28,894 --> 00:00:31,519
+while the original failures stay in the evidence.
+
+13
+00:00:31,796 --> 00:00:34,164
+There are also API testing tools,
+
+14
+00:00:34,313 --> 00:00:36,895
+Postman and OpenAPI imports,
+
+15
+00:00:37,044 --> 00:00:41,041
+and an exploratory testing workbench with Jira integration flows.
+
+16
+00:00:41,155 --> 00:00:43,503
+Live AI is still being configured.
+
+17
+00:00:43,630 --> 00:00:45,615
+Try ReleaseRadar on Vercel,
+
+18
+00:00:45,721 --> 00:00:47,299
+explore the code on GitHub,
+
+19
+00:00:47,299 --> 00:00:50,176
+and tell me what would make your testing day easier.

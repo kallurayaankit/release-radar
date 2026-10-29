@@ -1,0 +1,38 @@
+/* Pearl, sage and blue. Depth belongs to the scenery, not the controls. */
+:root{color-scheme:light;color:#243b45;background:#f4f6f3}
+body{background:transparent;isolation:isolate}
+.bar,main{position:relative;z-index:1}
+.bar{background:#f7faf5e8;border-color:#d5dfdb;flex-wrap:wrap}
+.brand{color:#243b45}.brand span{color:#5f757b}a{color:#31627c}
+.bar-actions{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.eyebrow,#connection,.badge{color:#406d63}h1 em{color:#457c80}
+.intro p,.muted,.privacy,#qa-status,.empty,footer,summary span{color:#586e76}
+.capabilities span{background:#f9fcf6b8;border-color:#c9dbd5;color:#3e6364}
+.card{background:#fbfcf8f2;border-color:#d0ded7;box-shadow:0 12px 40px #355b4a09}
+input,textarea,select{background:#fffefa;color:#243b45;border-color:#bdcfca}
+::placeholder{color:#687b81}
+button{background:#eef4f1;color:#315c59;border-color:#bbcec7}
+button:hover:not(:disabled){background:#dfebe5}
+.primary{background:#356c66;color:#fff;border-color:#356c66}
+.primary:hover:not(:disabled){background:#28574f}
+:focus-visible{outline-color:#356c66}
+details{border-color:#d1ddd6}.empty>span{color:#629394}.empty h3{color:#243b45}
+.report article{background:#fffefa;border-color:#d4e0da}
+.report article p,.report li{color:#475f68}
+.report code{background:#edf3ef;color:#315a6a}
+.decision{background:#f6efdc;border-color:#c9af70}
+.decision.hold{background:#faeeea;border-color:#d8a89b}
+.stale{border-color:#b28f42}
+.calm-scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;perspective:1000px;background:linear-gradient(135deg,#f6f6ef,#eef4f1 55%,#edf2f7)}
+.calm-depth{position:absolute;inset:-9%;transform:translate3d(var(--scene-x,0px),var(--scene-y,0px),0) rotateX(var(--scene-rx,0deg)) rotateY(var(--scene-ry,0deg));transition:transform 1.8s cubic-bezier(.2,.65,.3,1);transform-style:preserve-3d}
+.calm-orb{position:absolute;display:block;border-radius:50%;filter:blur(5px);will-change:transform;animation:calm-drift 24s ease-in-out infinite alternate}
+.calm-orb.sage{width:75vw;height:75vw;max-width:1100px;max-height:1100px;left:-25%;top:5%;background:radial-gradient(circle at 60% 40%,#acd3c0a6,#c6e1d146 45%,transparent 70%)}
+.calm-orb.blue{width:85vw;height:85vw;max-width:1200px;max-height:1200px;right:-30%;top:-28%;background:radial-gradient(circle,#a8c9e8b3,#c5d9e966 45%,transparent 70%);animation-duration:31s;animation-delay:-12s}
+.calm-orb.sand{width:65vw;height:65vw;bottom:-45%;right:10%;background:radial-gradient(circle,#e6d3ac80,#e9ddc738 50%,transparent 70%);animation-duration:27s;animation-delay:-6s}
+.calm-ring{position:absolute;width:85vw;height:85vw;border:1px solid #86aaa436;border-radius:50%;right:-32%;top:5%;box-shadow:0 0 0 65px #b8d1cd12,0 0 0 130px #b8d1cd12;transform:rotateX(55deg) rotateZ(-25deg);animation:calm-orbit 35s ease-in-out infinite alternate}
+@keyframes calm-drift{from{transform:translate3d(-3%,2%,0) scale(.95)}to{transform:translate3d(14%,-9%,70px) scale(1.12)}}
+@keyframes calm-orbit{to{transform:translate3d(-6%,8%,50px) rotateX(65deg) rotateZ(15deg)}}
+html[data-calm-motion="off"] .calm-depth{transform:none;transition:none}
+html[data-calm-motion="off"] .calm-scene *{animation-play-state:paused!important;will-change:auto}
+@media(prefers-reduced-motion:reduce){.calm-depth{transform:none!important;transition:none!important}.calm-scene *{animation:none!important;will-change:auto}}
+@media(max-width:850px){.bar-actions{gap:12px;font-size:12px}.calm-orb.sage{width:140vw;height:140vw;left:-65%}.calm-orb.blue{width:150vw;height:150vw;right:-80%;top:8%}.calm-orb.sand{width:150vw;height:150vw;bottom:-30%}.calm-ring{width:160vw;height:160vw;right:-110%}}
