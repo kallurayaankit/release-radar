@@ -1,3 +1,4 @@
+import {mountCoverage} from './coverage.js';
 import './stress.js';
 import {baseline, prepared, validatePlan, playwrightSpec, generationPrompt} from './scenario.js';
 import {money} from './checkout.js';
@@ -13,11 +14,12 @@ const proofCard=document.createElement('section');proofCard.id='proof-card';proo
 const $ = selector => document.querySelector(selector);
 const escape = text => String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let stage=0, busy=false, plan=null, source='', results=[], startedAt=null;
+const coverage=mountCoverage(()=>({results,cases:[...baseline,...(plan?.tests||[])]}));
 const versions=['correct','buggy'];
 const labels=['Run existing tests','Prepare missing tests','Run new tests on both builds','Apply fix & rerun unchanged tests','Demo complete — reset to replay'];
 const headings=['Start with what we already test','Find the missing interaction','Review the cases. Then prove it.','Fix the implementation, keep the tests','One regression. A verified fix.'];
 const descriptions=['Three existing checkout tests cover shipping without discounts. Run them against both builds.','The existing suite never combines discounts and shipping eligibility. Choose how to produce the missing cases.','Expected outcomes come from the business requirement. Run these exact cases against the correct and buggy builds.','Switch the shipping basis back to the discounted subtotal. Rerun every original and generated test, without editing their assertions.','The evidence below records what actually ran. Export the results and test spec for your presentation.'];
-function update(){
+function update(){ coverage.render();
   updateQuest(stage,busy);
   $('#download-plan').disabled=busy||!plan;
   const reproduced=stage>=3&&plan?.tests.find(t=>results.some(r=>r.group==='New'&&r.name===t.name&&r.version==='buggy'&&!r.pass&&!r.error));
@@ -72,7 +74,7 @@ $('#reset').addEventListener('click',()=>{stage=0;plan=null;source='';results=[]
 function download(name,value,type){const url=URL.createObjectURL(new Blob([value],{type}));const anchor=document.createElement('a');anchor.href=url;anchor.download=name;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('#download-test').addEventListener('click',()=>download('releaseradar.generated.spec.js',playwrightSpec(plan.tests),'text/javascript'));
 $('#download-plan').addEventListener('click',()=>download('releaseradar-test-cases.json',JSON.stringify(plan,null,2),'application/json'));
-$('#export').addEventListener('click',()=>download('releaseradar-evidence.json',JSON.stringify({app:'ReleaseRadar',scenario:'Seeded checkout shipping regression',startedAt,exportedAt:new Date().toISOString(),source,plan,results,scope:'DOM-based browser checks in same-origin iframes; not a Playwright run. Exported Playwright spec runs separately.'},null,2),'application/json'));
+$('#export').addEventListener('click',()=>download('releaseradar-evidence.json',JSON.stringify({app:'ReleaseRadar',scenario:'Seeded checkout shipping regression',startedAt,exportedAt:new Date().toISOString(),source,plan,results,coverage:coverage.report(),scope:'DOM-based browser checks in same-origin iframes; not a Playwright run. Exported Playwright spec runs separately.'},null,2),'application/json'));
 $('#guide').addEventListener('click',()=>$('#notes').showModal());$('#close-notes').addEventListener('click',()=>$('#notes').close());
 $('#present').addEventListener('click',()=>{const on=document.body.classList.toggle('presenting');$('#present').textContent=on?'↙ Exit presentation':'↗ Presentation view';});
 async function copy(text,button){try{await navigator.clipboard.writeText(text);const prior=button.textContent;button.textContent='Copied';setTimeout(()=>button.textContent=prior,1500);}catch{status('Clipboard unavailable. Use the prompt in the project README.');}}
