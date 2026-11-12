@@ -10,4 +10,4 @@ const version = new URLSearchParams(location.search).get('version') || 'buggy';
 document.querySelector('#version').textContent = version.toUpperCase() + ' BUILD · Seeded demo';
 function render(){try{const subtotal=Math.round(Number(document.querySelector('#subtotal').value)*100);const discount=Math.round(Number(document.querySelector('#discount').value)*100);const result=checkout(subtotal,discount,version);document.querySelector('#net').textContent=money(result.discountedSubtotal);document.querySelector('#shipping').textContent=money(result.shipping);document.querySelector('#total').textContent=money(result.total);document.querySelector('#error').textContent='';document.body.dataset.ready='true';}catch(error){document.querySelector('#error').textContent=error.message;document.querySelector('#shipping').textContent='Invalid';}}
 document.querySelector('form').addEventListener('submit',e=>{e.preventDefault();render();});render();
-</script></body></html>
+</script><link rel="stylesheet" href="orbital.css"></body></html>

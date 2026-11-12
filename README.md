@@ -120,3 +120,13 @@ Download JSON evidence containing the seed, engine version, corpus SHA-256, cont
 
 GitHub Actions runs logic/stress checks and browser suites on Chromium, Firefox and WebKit with Node 24. Paid AI tests remain opt-in and are skipped in this secret-free CI workflow. Failure traces are uploaded for seven days. Local execution uses Edge on Windows unless `TEST_BROWSER` selects another installed Playwright browser.
 
+
+## Orbital workspace and human testing — November 2026
+
+The production application lives under `vercel/`; the root `dist/` remains the legacy demo. The shared orbital theme adds an original shaded planet and satellite scene, pointer/scroll parallax, a lightweight starfield, saved motion controls, system reduced-motion support, and a Ctrl/Cmd+K tool launcher. Controls remain stationary. The theme covers regression and stress labs, QA copilot, API lab, workbench, checkout fixture and sign-in. No reference-site images or video are copied.
+
+`human-testing.html` adds Human Intelligence Software Testing (HIST): context, assumptions, test oracles, experiments, observations, evidence references, coverage limits, next investigations and explicit human review. Changes to a reviewed investigation invalidate the prior review. These are supporting workflows, not a certified methodology or automated quality score.
+
+The Agile evidence view reads the existing browser-local sprint workspace, highlights missing acceptance examples and sessions, and excludes stale story revisions from current observation counts. The release-review checklist records evidence, blockers, unreviewed areas and applicability reasons; changing release/build identity resets its statuses. No status authorizes a deployment.
+
+HIST notes are stored under `rr-human-testing-v1` in this browser, separately from `rr-testing-workspace-v1`. JSON import validates and previews replacement; Markdown exports include explicit unknowns. Notes are not sent to AI or synchronized across users/devices. Back up each workspace independently.
