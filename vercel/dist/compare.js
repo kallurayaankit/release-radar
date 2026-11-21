@@ -2,6 +2,7 @@ const byId = id => document.getElementById(id);
 const reports = {baseline: null, candidate: null};
 const revisions = {baseline: 0, candidate: 0};
 const pageSize = 50;
+let sourceVersion = 0;
 let findings = [];
 let page = 0;
 
@@ -83,6 +84,8 @@ function render() {
 
 for (const side of Object.keys(reports)) {
   byId(side).onchange = async event => {
+    sourceVersion++;
+    byId('actions-status').replaceChildren();
     const revision = ++revisions[side];
     const file = event.target.files[0];
     reports[side] = null;
@@ -101,6 +104,8 @@ for (const side of Object.keys(reports)) {
   };
 }
 byId('example').onclick = () => {
+  sourceVersion++;
+  byId('actions-status').replaceChildren();
   const sample = {
     baseline: '<testcase name="Shipping threshold"/><testcase name="Coupon rounding"><failure/></testcase><testcase name="Guest cart"/>',
     candidate: '<testcase name="Shipping threshold"><failure/></testcase><testcase name="Coupon rounding"/><testcase name="Refund"><skipped/></testcase>'
@@ -113,6 +118,47 @@ byId('example').onclick = () => {
   compare();
 };
 byId('filter').onchange = () => { page = 0; render(); };
+byId('actions-form').onsubmit = async event => {
+  event.preventDefault();
+  const version = ++sourceVersion;
+  const status = byId('actions-status');
+  const button = event.target.querySelector('button');
+  const token = byId('actions-token').value.trim();
+  byId('actions-token').value = '';
+  button.disabled = true;
+  for (const side of Object.keys(reports)) {
+    revisions[side]++;
+    reports[side] = null;
+    byId(side).value = '';
+  }
+  compare();
+  byId('message').textContent = '';
+  status.textContent = 'Reading the two most recent completed runs…';
+  try {
+    const response = await fetch('/api/actions/compare', {
+      method:'POST', headers:{Authorization:'Bearer ' + token}, cache:'no-store'
+    });
+    const pair = await response.json();
+    if (version !== sourceVersion) return;
+    if (!response.ok) throw Error(pair.error || 'GitHub comparison is unavailable.');
+    const parsed = {};
+    for (const side of Object.keys(reports)) {
+      parsed[side] = {label:pair[side].label, cases:parseReport(pair[side].xml)};
+    }
+    Object.assign(reports, parsed);
+    status.replaceChildren();
+    for (const side of ['baseline','candidate']) {
+      const link = document.createElement('a');
+      link.href = 'https://github.com/kallurayaankit/release-radar/actions/runs/' + pair[side].id;
+      link.textContent = side + ' · ' + pair[side].label;
+      status.append(link, ' ');
+    }
+    compare();
+    byId('changes').scrollIntoView({block:'start'});
+  } catch (error) {
+    if (version === sourceVersion) status.textContent = error.message;
+  } finally { button.disabled = false; }
+};
 byId('previous').onclick = () => { page--; render(); };
 byId('next').onclick = () => { page++; render(); };
 byId('download').onclick = () => {
