@@ -26,10 +26,13 @@
       <h2 id="actions-title">GitHub Actions</h2>
       <p>Compare the two most recent completed pushes to ReleaseRadar’s main branch in <a href="https://github.com/kallurayaankit/release-radar/actions/workflows/vercel.yml">Vercel application checks</a>.</p>
       <form id="actions-form">
-        <label>Fine-grained GitHub token<input id="actions-token" type="password" required autocomplete="off" spellcheck="false"></label>
-        <p>Use a token scoped to this repository with Actions read access. ReleaseRadar uses it on the server for this request and then discards it.</p>
+        <p><a id="github-login" href="/api/actions/login">Sign in with GitHub</a></p>
+        <details id="token-option"><summary>Use a fine-grained token instead</summary>
+          <label>GitHub token with Actions read access<input id="actions-token" type="password" autocomplete="off" spellcheck="false"></label>
+        </details>
         <button class="primary" type="submit">Compare latest GitHub runs</button>
       </form>
+      <form id="github-logout" action="/api/actions/logout" method="post" hidden><button>Sign out of Compare runs</button></form>
       <p id="actions-status" role="status"></p>
     </section>
     <section class="api-card" aria-label="Choose test reports">

@@ -118,12 +118,36 @@ byId('example').onclick = () => {
   compare();
 };
 byId('filter').onchange = () => { page = 0; render(); };
+let signedIn = false;
+async function loadLogin() {
+  const response = await fetch('/api/actions/session',{cache:'no-store'});
+  if (!response.ok) return;
+  const session = await response.json();
+  signedIn = session.connected;
+  byId('github-login').hidden = signedIn || !session.configured;
+  byId('github-logout').hidden = !signedIn;
+  byId('token-option').hidden = signedIn;
+  if (!session.configured) {
+    byId('token-option').open = true;
+    byId('actions-status').textContent = 'GitHub sign-in is awaiting app configuration. Token access is available.';
+  } else if (signedIn) {
+    byId('actions-status').textContent = 'Signed in with GitHub.';
+  } else if (new URLSearchParams(location.search).get('github') === 'retry') {
+    byId('actions-status').textContent = 'GitHub sign-in did not finish. Please try again.';
+  }
+}
+loadLogin().catch(() => {});
 byId('actions-form').onsubmit = async event => {
   event.preventDefault();
   const version = ++sourceVersion;
   const status = byId('actions-status');
   const button = event.target.querySelector('button');
   const token = byId('actions-token').value.trim();
+  if (!signedIn && !token) {
+    if (!byId('github-login').hidden) location.assign('/api/actions/login');
+    else byId('actions-token').focus();
+    return;
+  }
   byId('actions-token').value = '';
   button.disabled = true;
   for (const side of Object.keys(reports)) {
@@ -136,11 +160,14 @@ byId('actions-form').onsubmit = async event => {
   status.textContent = 'Reading the two most recent completed runs…';
   try {
     const response = await fetch('/api/actions/compare', {
-      method:'POST', headers:{Authorization:'Bearer ' + token}, cache:'no-store'
+      method:'POST', headers:token ? {Authorization:'Bearer ' + token} : {}, cache:'no-store'
     });
     const pair = await response.json();
     if (version !== sourceVersion) return;
-    if (!response.ok) throw Error(pair.error || 'GitHub comparison is unavailable.');
+    if (!response.ok) {
+      if (response.status === 401 && signedIn) await loadLogin();
+      throw Error(pair.error || 'GitHub comparison is unavailable.');
+    }
     const parsed = {};
     for (const side of Object.keys(reports)) {
       parsed[side] = {label:pair[side].label, cases:parseReport(pair[side].xml)};

@@ -27,11 +27,11 @@ async function extractReport(bytes) {
   } finally { archive.close(); }
 }
 
-export async function compareActionsRuns(request, origin, fetchImpl = fetch) {
+export async function compareActionsRuns(request, origin, fetchImpl = fetch, sessionToken) {
   if (request.method !== 'POST') return reply({error:'Use POST.'},405);
   if (request.headers.get('Origin') !== origin) return reply({error:'Open Compare runs on the production site.'},403);
-  const authorization = request.headers.get('Authorization') || '';
-  if (!/^Bearer github_pat_[a-zA-Z0-9_]{10,300}$/.test(authorization)) return reply({error:'Enter a fine-grained GitHub token with Actions read access.'},401);
+  const authorization = sessionToken ? 'Bearer ' + sessionToken : request.headers.get('Authorization') || '';
+  if (!sessionToken && !/^Bearer github_pat_[a-zA-Z0-9_]{10,300}$/.test(authorization)) return reply({error:'Sign in with GitHub to compare runs.'},401);
   const signal = AbortSignal.timeout(25000);
   const github = async path => {
     const response = await fetchImpl('https://api.github.com/repos/' + repo + '/actions/' + path, {
