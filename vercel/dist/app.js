@@ -19,7 +19,7 @@ const versions=['correct','buggy'];
 const labels=['Run existing tests','Prepare missing tests','Run new tests on both builds','Apply fix & rerun unchanged tests','Demo complete — reset to replay'];
 const headings=['Start with what we already test','Find the missing interaction','Review the cases. Then prove it.','Fix the implementation, keep the tests','One regression. A verified fix.'];
 const descriptions=['Three existing checkout tests cover shipping without discounts. Run them against both builds.','The existing suite never combines discounts and shipping eligibility. Choose how to produce the missing cases.','Expected outcomes come from the business requirement. Run these exact cases against the correct and buggy builds.','Switch the shipping basis back to the discounted subtotal. Rerun every original and generated test, without editing their assertions.','The evidence below records what actually ran. Export the results and test spec for your presentation.'];
-function update(){ coverage.render();
+function update(){ document.dispatchEvent(new CustomEvent('rr:stage',{detail:{stage,busy}}));coverage.render();
   updateQuest(stage,busy);
   $('#download-plan').disabled=busy||!plan;
   const reproduced=stage>=3&&plan?.tests.find(t=>results.some(r=>r.group==='New'&&r.name===t.name&&r.version==='buggy'&&!r.pass&&!r.error));
