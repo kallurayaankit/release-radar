@@ -16,5 +16,16 @@ jobs:
           cache: npm
           cache-dependency-path: vercel/package-lock.json
       - run: npm ci
-      - run: npm test
+      - name: Run tests and record JUnit results
+        id: tests
+        run: node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=results.xml tests/*.test.mjs
+      - name: Keep only case names and outcomes
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure') }}
+        run: python scripts/compact-junit.py results.xml junit.xml
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles('vercel/junit.xml') != '' }}
+        with:
+          name: junit-results-${{ github.run_attempt }}
+          path: vercel/junit.xml
+          retention-days: 30
       - run: npm run build
