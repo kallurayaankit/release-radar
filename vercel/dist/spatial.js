@@ -1,5 +1,5 @@
 const doc=document.documentElement;
-const installUi=()=>{if(!document.querySelector('link[href="orbital.css"]'))return setTimeout(installUi,50);for(const href of ['chatgpt-ui.css','mission-experience.css','rst.css']){document.querySelector(`link[href="${href}"]`)?.remove();const ui=document.createElement('link');ui.rel='stylesheet';ui.href=href;document.body.append(ui);}};
+const installUi=()=>{if(!document.querySelector('link[href="orbital.css"]'))return setTimeout(installUi,50);for(const href of ['chatgpt-ui.css','mission-experience.css','rst.css','macos-ui.css']){document.querySelector(`link[href="${href}"]`)?.remove();const ui=document.createElement('link');ui.rel='stylesheet';ui.href=href;document.body.append(ui);}};
 installUi();
 const scene=document.createElement('div');scene.className='spatial-scene';scene.setAttribute('aria-hidden','true');const canvas=document.createElement('canvas');scene.append(canvas);document.body.prepend(scene);
 const main=document.querySelector('main');if(main){main.id||='workspace';const skip=document.createElement('a');skip.className='space-skip';skip.href='#'+main.id;skip.textContent='Skip to workspace';document.body.prepend(skip);}
