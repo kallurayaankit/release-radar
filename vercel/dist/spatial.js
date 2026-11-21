@@ -1,4 +1,6 @@
 const doc=document.documentElement;
+const installUi=()=>{if(!document.querySelector('link[href="orbital.css"]'))return setTimeout(installUi,50);document.querySelector('link[href="chatgpt-ui.css"]')?.remove();const ui=document.createElement('link');ui.rel='stylesheet';ui.href='chatgpt-ui.css';document.body.append(ui);};
+installUi();
 const scene=document.createElement('div');scene.className='spatial-scene';scene.setAttribute('aria-hidden','true');const canvas=document.createElement('canvas');scene.append(canvas);document.body.prepend(scene);
 const main=document.querySelector('main');if(main){main.id||='workspace';const skip=document.createElement('a');skip.className='space-skip';skip.href='#'+main.id;skip.textContent='Skip to workspace';document.body.prepend(skip);}
 const links=[['./#regression-lab','Regression','Reproduce & verify'],['./#stress-lab','Stress lab','Boundaries & invariants'],['copilot.html','QA Copilot','Risks & test plans'],['api-lab.html','API Lab','Requests & authentication'],['testing-workbench.html','Workbench','Stories & sessions'],['human-testing.html#hist','HIST','Human intelligence'],['human-testing.html#agile','Agile testing','Sprint evidence'],['human-testing.html#readiness','Release review','Gaps & decisions']];
