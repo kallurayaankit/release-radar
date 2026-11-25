@@ -7,6 +7,10 @@ export async function application(request,env,{db,clientIp='anonymous',waitUntil
  try{
   const origin=new URL(env.APP_ORIGIN);if(origin.protocol!=='https:'||origin.pathname!=='/'||origin.search||origin.hash)throw Error('Invalid origin');
   const incoming=new URL(request.url);if(incoming.origin!==origin.origin)return Response.json({error:'Use the configured production site.'},{status:403,headers:{'Cache-Control':'no-store'}});
+  if(incoming.pathname==='/api/mcp'){
+    const {handleMcp}=await import('../mcp/http.js');
+    return await handleMcp(request,origin.origin);
+  }
   if(/^\/api\/actions\/(login|callback|logout|session)$/.test(incoming.pathname))return await githubLogin(request,env);
   if(incoming.pathname==='/api/actions/compare')return await compareActionsRuns(request,origin.origin,fetch,githubToken(request,env));
   const h=new Headers(request.headers);for(const key of ['oai-authenticated-user-id','cf-connecting-ip','x-forwarded-for','x-real-ip','authorization'])h.delete(key);h.set('cf-connecting-ip',clientIp);
