@@ -24,6 +24,7 @@
     <details><summary>Connect an MCP client</summary>
       <p>Choose Streamable HTTP in your MCP client and enter <code>https://releaseradar-lime.vercel.app/api/mcp</code>. Reports supplied to this endpoint are processed on the server.</p>
       <p>Try asking “Read the checkout example, compare the runs, and investigate the missing test using the supplied diff.”</p>
+      <p>Have a public Playwright HTML report? Ask your client to call <code>inspect_playwright_test</code> with an exact test title and the raw GitHub report URL at a full commit SHA. It returns recorded attempts, source locations, and a SHA-256 fingerprint. For a missing JUnit case, pass the same URL as <code>publicReportUrl</code> to <code>investigate_missing_test</code>.</p>
     </details>
     <p>Compare a baseline with a candidate build to see which tests need attention. Files are processed in this browser.</p>
     <section class="api-card" aria-labelledby="actions-title">

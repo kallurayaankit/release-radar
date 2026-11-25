@@ -19,6 +19,7 @@ export function readCases(xml) {
       const key = JSON.stringify([suites,className,name]);
       if (key.length > 1200 || result.has(key)) throw Error('Oversized or duplicate test identity.');
       current = {name,className,suites:[...suites],outcome:'passed'};
+      if (tag.attributes.file?.value) current.file = tag.attributes.file.value.replaceAll('\\','/');
       result.set(key,current);
     } else if (current && stack.at(-1) === 'testcase' && priority.indexOf(type) > priority.indexOf(current.outcome)) {
       current.outcome = type;
@@ -93,13 +94,14 @@ export function investigate(baseline,candidate,identity,diff='',runnerReport) {
       nextCheck:'Compare suite labels and test declarations in both revisions to verify this correspondence.'};
   }
   if (runnerReport) {
-    const file = identity.suites.at(-1);
+    const fileOf = row => row.file || (/\.(?:[cm]?[jt]sx?|py|java|cs|rb|go)$/.test(row.className) ? row.className.replaceAll('\\','/') : row.suites.at(-1));
+    const file = fileOf(before);
     const sameFile = path => path === file || (!file?.includes('/') && path.split('/').at(-1) === file);
     const rows = runnerReport.rows.filter(row=>row.name===identity.name && sameFile(row.file));
-    const sources = new Set(rows.map(row=>JSON.stringify([row.file,row.project])));
-    const possible = [...baseline.values()].filter(row=>row.name===identity.name && row.suites.at(-1)===file);
+    const sources = new Set(rows.map(row=>JSON.stringify([row.file,row.project,row.line,row.column,row.suitePath])));
+    const possible = [...baseline.values()].filter(row=>row.name===identity.name && fileOf(row)===file);
     if (rows.length && sources.size === 1 && possible.length === 1 &&
-        ![...candidate.values()].some(row=>row.name===identity.name && row.suites.at(-1)===file)) {
+        ![...candidate.values()].some(row=>row.name===identity.name && fileOf(row)===file)) {
       return {...facts,assessment:'matching runner result',evidence:[],runnerMatch:{ref:runnerReport.ref,
         file:rows[0].file,project:rows[0].project,observations:rows.length,outcomes:[...new Set(rows.map(row=>row.outcome))]},
         nextCheck:'Verify the supplied runner report belongs to the candidate run and inspect reporter filters for this file and title.'};

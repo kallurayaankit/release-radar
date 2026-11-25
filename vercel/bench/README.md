@@ -35,9 +35,21 @@ python vercel/bench/benchmark.py ../rr-history-benchmark --junit2html
 
 The collector reads two immutable reporting-branch snapshots. It selects main-branch runs 186–247 and 470–556, deduplicates by Actions run URL, then compares adjacent retained reports within each window. Run numbers can have gaps. Results are Allure suite-tree leaves projected to JUnit with scope intact. Playwright observations come from attempt statuses in each saved HTML report's embedded ZIP. The collector downloads data and diffs. It does not execute upstream project code. [Earlier archive](https://github.com/ella79/agentic-playwright-suite/tree/279ee2ab4044eb08a4b6d2895736e7c7815b30e7) · [Later archive](https://github.com/ella79/agentic-playwright-suite/tree/cfd20eb1addf3a4f5456fd111d32b1339fc51dd6)
 
-Git compares sorted full-identity manifests. junit2html compares equivalent flat JUnit records with the suite path encoded in classname to preserve browser and file identity. Difflib searches newly added identities with its standard 0.6 cutoff. Both ReleaseRadar engines receive identical JUnit and source diff inputs. Patches prioritize the named source file and label fixture within the MCP limit of 50,000 characters. The revised engine also accepts rows from the candidate runner report. The caller supplies this optional evidence. The MCP does not download Playwright HTML automatically.
+Git compares sorted full-identity manifests. junit2html compares equivalent flat JUnit records with the suite path encoded in classname to preserve browser and file identity. Difflib searches newly added identities with its standard 0.6 cutoff. Both ReleaseRadar engines receive identical JUnit and source diff inputs. Patches prioritize the named source file and label fixture within the MCP limit of 50,000 characters. The historical replay supplies projected candidate runner rows. MCP 1.1 can also read the source report using the workflow below.
 
 Scoring requires the exact new report identity for a relabel, or the matching runner result and observed passing outcome for a reporter omission. The reference join uses upstream test-plan IDs plus browser, independently of the engine's title and file heuristic. This checks evidence correspondence. It does not prove semantic equivalence of test bodies. Timings printed by the replay cover in-process parsing and investigation. On the recorded pass they were 113 ms before and 99 ms after. Single-pass engine timings exclude downloads and human review.
+
+## Public Playwright evidence in MCP 1.1
+
+In an MCP client, read `releaseradar://examples/playwright` and pass its arguments to `inspect_playwright_test`. For your own public report, provide its raw GitHub HTML URL pinned to a full commit and the exact test title. The response groups recorded attempt outcomes by project, file, line, column and suite, including retries. It includes the SHA-256 of the retrieved HTML. Confirm the archive belongs to the candidate Actions run. A hash identifies the bytes retrieved.
+
+To investigate an absence directly, call `investigate_missing_test` with the two JUnit XML inputs, the original identity and `publicReportUrl`. The server fetches the report and projects matching observations. JUnit source-file attributes can identify the file even when the suite is labeled differently. Ambiguous source locations do not establish a runner match. Input is limited to 4 MiB of HTML containing an inline Playwright archive, 16 MiB expanded, and 500 matching attempts. Private reports can continue to use locally projected rows.
+
+The cross-project replay uses two published Playwright reports from outside the development corpus. Python's ZIP reader independently reconstructs their location and outcome tables. The importer reproduced all 16 attempts for 12 titles. With a deliberately withheld JUnit entry, 10 unique locations matched, two ambiguous titles remained unresolved, and two absent-title controls yielded zero observations. All 16 observed attempts passed. Separate regression fixtures exercise retries and failures. These results measure import fidelity and controlled matching. They do not estimate accuracy on naturally missing tests across these projects. [Archived multi-browser run](https://github.com/mishiwata1015/playwright-report-to-gh-pages/actions/runs/4073224816) · [Archived Chromium run](https://github.com/ifeelBALANCED/cron-playwright/actions/runs/21627676040)
+
+```sh
+python vercel/bench/playwright-replay.py ../rr-public-reports
+```
 
 ## Timed tester exercise
 
