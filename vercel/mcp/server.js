@@ -8,6 +8,9 @@ const reports = {baselineXml:xml,candidateXml:xml};
 const identity = z.object({suites:z.array(z.string()).max(64),className:z.string(),name:z.string().min(1)});
 const paging = {offset:z.number().int().nonnegative().default(0),limit:z.number().int().min(1).max(50).default(25),changesOnly:z.boolean().default(true)};
 const runRef = z.object({label:z.string(),url:z.string()});
+const runnerRow = z.object({name:z.string().min(1).max(500),file:z.string().min(1).max(500),
+  project:z.string().max(200),outcome:z.string().min(1).max(50)});
+const runnerReport = z.object({ref:z.string().min(1).max(500),rows:z.array(runnerRow).max(500)});
 const comparison = z.object({
   baselineCases:z.number(),candidateCases:z.number(),counts:z.record(z.string(),z.number()),matching:z.number(),
   rows:z.array(identity.extend({baseline:z.string().nullable(),candidate:z.string().nullable(),finding:z.string()})),
@@ -27,11 +30,12 @@ export function createServer({githubToken}={}) {
     inputSchema:z.object({...reports,...paging}),outputSchema:comparison,annotations
   },({baselineXml,candidateXml,...options}) => result(compareReports(readCases(baselineXml),readCases(candidateXml),options)));
   server.registerTool('investigate_missing_test',{
-    description:'Investigate a missing identity from compare_runs. Optionally supply the unified source diff between those runs. Returns the observed evidence and a next check.',
-    inputSchema:z.object({...reports,identity,diff:z.string().max(50000).optional()}),
-    outputSchema:z.object({identity,baseline:z.string(),candidate:z.literal('absent'),assessment:z.enum(['unresolved','possible rename','declaration removal observed']),
+    description:'Investigate a missing identity. Optionally supply the unified source diff and runner observations from the candidate run. Include all matching titles, files and projects when projecting runner rows. Report relabels are hypotheses.',
+    inputSchema:z.object({...reports,identity,diff:z.string().max(50000).optional(),runnerReport:runnerReport.optional()}),
+    outputSchema:z.object({identity,baseline:z.string(),candidate:z.literal('absent'),assessment:z.enum(['unresolved','possible rename','declaration removal observed','possible report relabel','matching runner result']),
+      candidateIdentity:identity.optional(),runnerMatch:z.object({ref:z.string(),file:z.string(),project:z.string(),observations:z.number(),outcomes:z.array(z.string())}).optional(),
       candidateName:z.string().optional(),evidence:z.array(z.object({file:z.string(),hunk:z.string(),removedDeclaration:z.string()})),nextCheck:z.string()}),annotations
-  },({baselineXml,candidateXml,identity,diff})=>result(investigate(readCases(baselineXml),readCases(candidateXml),identity,diff)));
+  },({baselineXml,candidateXml,identity,diff,runnerReport})=>result(investigate(readCases(baselineXml),readCases(candidateXml),identity,diff,runnerReport)));
   server.registerTool('trace_test_history',{
     description:'Trace one exact test identity through an ordered series of reports. Supply oldest first. Returns last observed evidence, trailing missing reports, and each observed outcome.',
     inputSchema:z.object({identity,runs:z.array(z.object({ref:z.string().min(1).max(200),xml})).min(1).max(12)}),

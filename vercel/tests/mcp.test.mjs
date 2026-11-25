@@ -32,6 +32,26 @@ test('shared findings retain skips, errors and full counts on later pages',()=>{
   assert.equal(page.counts['New failure'],1);
   for (const input of [xml('a','a'),'<!DOCTYPE testsuite><testsuite/>','<testsuite>','<other/>']) assert.throws(()=>readCases(input));
 });
+const report = (project,label,title='Login')=>'<testsuite name="'+project+'"><testsuite name="'+label+'"><testsuite name="login.spec.ts"><testcase name="'+title+'"/></testsuite></testsuite></testsuite>';
+const grouped = {suites:['Chromium','Account','login.spec.ts'],className:'',name:'Login'};
+test('report relabels require a one-to-one new identity anchored to the same project and file',()=>{
+  const check = (a,b)=>investigate(readCases('<testsuites>'+a+'</testsuites>'),readCases('<testsuites>'+b+'</testsuites>'),grouped);
+  const old = report('Chromium','Account'), replacement = report('Chromium','Account Page','LOGIN');
+  assert.deepEqual(check(old,replacement).candidateIdentity,{...grouped,suites:['Chromium','Account Page','login.spec.ts'],name:'LOGIN'});
+  assert.equal(check(old,report('WebKit','Account Page')).assessment,'unresolved');
+  assert.equal(check(old+replacement,replacement).assessment,'unresolved');
+  assert.equal(check(old,replacement+report('Chromium','Other')).assessment,'unresolved');
+});
+test('runner evidence exposes qualified matches and abstains on ambiguous files or projects',()=>{
+  const a = readCases(report('Chromium','Account')), b = readCases('<testsuites/>');
+  const row = {file:'tests/login.spec.ts',project:'setup',name:'Login',outcome:'skipped'};
+  const check = rows=>investigate(a,b,grouped,'',{ref:'run 5',rows});
+  assert.deepEqual(check([row,row]).runnerMatch,{ref:'run 5',file:row.file,project:'setup',outcomes:['skipped'],observations:2});
+  for(const other of [{project:'other'},{file:'elsewhere/login.spec.ts'}]){
+    assert.equal(check([row,{...row,...other}]).assessment,'unresolved');
+  }
+  assert.equal(check([{...row,name:'Login again'}]).assessment,'unresolved');
+});
 test('official MCP client discovers and uses the example, tools, pagination and error path over stdio',async()=>{
   const client = new Client({name:'release-review-test',version:'1'});
   const entry = fileURLToPath(new URL('../mcp/stdio.js',import.meta.url));
@@ -46,6 +66,10 @@ test('official MCP client discovers and uses the example, tools, pagination and 
     assert.equal(pair.structuredContent.nextOffset,1);
     const missing = await client.callTool({name:'investigate_missing_test',arguments:example});
     assert.equal(missing.structuredContent.assessment,'possible rename');
+    const runner = await client.callTool({name:'investigate_missing_test',arguments:{
+      baselineXml:report('Chromium','Account'),candidateXml:'<testsuites/>',identity:grouped,
+      runnerReport:{ref:'candidate 25',rows:[{file:'tests/login.spec.ts',project:'setup',name:'Login',outcome:'passed'}]}}});
+    assert.equal(runner.structuredContent.runnerMatch.ref,'candidate 25');
     const history = await client.callTool({name:'trace_test_history',arguments:{identity:example.identity,
       runs:[{ref:'previous',xml:baselineXml},{ref:'current',xml:candidateXml}]}});
     assert.equal(history.structuredContent.lastObserved,'previous');

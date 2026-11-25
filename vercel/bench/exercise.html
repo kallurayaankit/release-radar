@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Missing-test investigation · ReleaseRadar</title>
+<style>
+:root{color-scheme:light;font:17px/1.55 system-ui;color:#172a36;background:#f6f8fa}
+main{max-width:48rem;margin:4vh auto;background:white;padding:clamp(1rem,4vw,3rem);border:1px solid #cdd7df;border-radius:1rem}
+h1,h2{line-height:1.15}input,select,textarea,button{font:inherit;padding:.4rem .7rem}
+label,textarea{display:block;margin:.65rem 0}textarea{width:95%}button{background:#135768;color:white;border:0;border-radius:.4rem;cursor:pointer}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f0f5f6;padding:1rem}a{color:#145f79}summary{cursor:pointer}details{margin:1rem 0}
+</style>
+<main><h1>Missing-test investigation</h1>
+<section id="setup"><p>You’ll investigate two real CI comparisons. Use the supplied evidence to explain what happened to the named test. You may answer “insufficient evidence.” Work independently. The timer runs from opening a case until you submit your answer. Keep this page open through both cases.</p>
+<form id="enroll"><label>Participant code <input id="person" required pattern="[A-Za-z0-9_-]{1,32}" maxlength="32" autocomplete="off"></label>
+<label>Assigned group <select id="group"><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
+<button>Continue</button></form></section>
+<section id="ready" hidden><h2 id="stage"></h2><button id="start">Open case and start timer</button></section>
+<section id="work" hidden><h2 id="heading"></h2><p id="prompt"></p>
+<details><summary>Inspect report records for this title</summary><pre id="records"></pre></details><ul id="links"></ul>
+<div id="assistance" hidden><h3>ReleaseRadar finding</h3><pre id="finding"></pre></div>
+<form id="response"><label>Best-supported explanation <select id="answer" required><option value="">Choose an answer</option>
+<option>Report grouping or title changed</option><option>Runner recorded the test under this title and file</option>
+<option>Test declaration was deleted with no replacement</option><option>Test was skipped</option><option>Insufficient evidence</option></select></label>
+<label>Which evidence supports your answer? Include a run, file, label or source reference.<textarea id="citation" required rows="3"></textarea></label>
+<button>Submit and stop timer</button></form></section>
+<section id="done" hidden><h2>Session complete</h2><p>Download the result file and give it to the study organizer.</p><a id="download">Download session JSON</a></section></main>
+<script src="exercise-data.js"></script>
+<script>
+'use strict';
+const el = id => document.getElementById(id);
+const assignments = {A:[[0,false],[1,true]],B:[[0,true],[1,false]],
+                     C:[[1,false],[0,true]],D:[[1,true],[0,false]]};
+let session, steps, startTime, active = false;
+const index = () => session.responses.length;
+function ready() {
+  el('stage').textContent = 'Case '+(index()+1)+' of 2';
+  el('ready').hidden = false;
+}
+el('enroll').onsubmit = event => {
+  event.preventDefault();
+  session = {version:1,participant:el('person').value,group:el('group').value,responses:[]};
+  steps = assignments[session.group];
+  el('setup').hidden = true;
+  ready();
+};
+el('start').onclick = () => {
+  const [i,assisted] = steps[index()], task = tasks[i];
+  el('heading').textContent = 'Runs '+task.pair.replace('-', ' → ');
+  el('prompt').textContent = 'What happened to “'+task.title+'” from '+task.suites.join(' / ')+'?';
+  el('records').textContent = JSON.stringify(task.records,null,2);
+  document.querySelector('details').open = false;
+  el('links').replaceChildren();
+  for (const [label,url] of Object.entries(task.links)) {
+    const link = document.createElement('a'), item = document.createElement('li');
+    link.textContent = label; link.href = url; link.target = '_blank'; link.rel = 'noopener';
+    item.append(link); el('links').append(item);
+  }
+  el('assistance').hidden = !assisted;
+  el('finding').textContent = assisted ? JSON.stringify(task.assistant,null,2) : '';
+  el('ready').hidden = true; el('work').hidden = false;
+  el('response').reset(); active = true; startTime = performance.now();
+};
+el('response').onsubmit = event => {
+  event.preventDefault();
+  if (!active || !el('citation').value.trim()) return;
+  const [i,assisted] = steps[index()];
+  session.responses.push({pair:tasks[i].pair,assisted,seconds:(performance.now()-startTime)/1000,
+    answer:el('answer').value,citation:el('citation').value.trim()});
+  active = false; el('work').hidden = true;
+  if (index()<steps.length) { ready(); return; }
+  el('download').href = URL.createObjectURL(new Blob([JSON.stringify(session,null,2)],{type:'application/json'}));
+  el('download').download = 'session-'+session.participant+'.json'; el('done').hidden = false;
+};
+</script></html>
